@@ -44,7 +44,7 @@ class Species:
         '''
         Adds cubic volume equation assignments for each region to the Species class
         '''
-        self.WOR_VOL = eval("Eq_"+str(check_for_None(WOR)))
+        self.WOR_VOL = eval("Eq_"+str(check_for_None(WOR_VOL)))
         self.WWA_VOL = eval("Eq_"+str(check_for_None(WWA)))
         self.EOR_VOL = eval("Eq_"+str(check_for_None(EOR)))
         self.EWA_VOL = eval("Eq_"+str(check_for_None(EWA)))
@@ -82,14 +82,14 @@ class Species:
 
 # read in the species codes provided by the user
 # includes the user's code, the FIA code, and the common_name
-species_crosswalk = pd.read_excel("/opt/ARBcarbon/Your_species_codes.xlsx", "Crosswalk")
+species_crosswalk = pd.read_csv("/tmp/species-crosswalk.csv")
 species_used = species_crosswalk.dropna() # ignore species the user didn't provide in the crosswalk table
 
 
 # In[6]:
 
 # read in the tables that describe which equations and wood parameters are required by ARB
-with pd.ExcelFile('/opt/ARB_Volume_and_Biomass_Tables.xlsx') as xlsx:
+with pd.ExcelFile('/opt/ARBcarbon/ARB_Volume_and_Biomass_Tables.xlsx') as xlsx:
     SW_VOL = pd.read_excel(xlsx, 'SW_Volume_equations', index_col= 'FIA_code')
     HW_VOL = pd.read_excel(xlsx, 'HW_Volume_equations', index_col= 'FIA_code')
     VOL = pd.concat([SW_VOL, HW_VOL]) # concatenate all volume equation assignments
@@ -112,6 +112,8 @@ with pd.ExcelFile('/opt/ARB_Volume_and_Biomass_Tables.xlsx') as xlsx:
     
 # merge all these into a single dataframe
 ARB_species_attributes = pd.merge(VOL_Wood, BB_BLB, left_index = True, right_index = True)
+ARB_species_attributes = ARB_species_attributes.groupby('FIA_code')
+ARB_species_attributes = ARB_species_attributes.apply(lambda x: x.sample(n=1))
 
 
 # In[7]:
@@ -122,39 +124,38 @@ species_classes = {}
 
 # iterate through the rows in the user's crosswalk
 for index, row in species_used.iterrows():
-    
     # create a class for the species, stored in the dictionary
     species_classes[row.Your_species_code] = Species(row.FIA_code, row.Common_name, row.Wood_type)
     
     # add the attributes for those species by selecting the appropriate values from the species_attributes dataframe
     
     # gather the volume equation assignments
-    WOR_VOL = ARB_species_attributes.loc[row.FIA_code, 'WOR_VOL']
-    WWA_VOL = ARB_species_attributes.loc[row.FIA_code, 'WWA_VOL']
-    EOR_VOL = ARB_species_attributes.loc[row.FIA_code, 'EOR_VOL']
-    EWA_VOL = ARB_species_attributes.loc[row.FIA_code, 'EWA_VOL']
-    CA_VOL = ARB_species_attributes.loc[row.FIA_code, 'CA_VOL']
+    WOR_VOL = ARB_species_attributes.loc[row.FIA_code, 'WOR_VOL'].iloc[0]
+    WWA_VOL = ARB_species_attributes.loc[row.FIA_code, 'WWA_VOL'].iloc[0]
+    EOR_VOL = ARB_species_attributes.loc[row.FIA_code, 'EOR_VOL'].iloc[0]
+    EWA_VOL = ARB_species_attributes.loc[row.FIA_code, 'EWA_VOL'].iloc[0]
+    CA_VOL = ARB_species_attributes.loc[row.FIA_code, 'CA_VOL'].iloc[0]
     species_classes[row.Your_species_code].add_vols(WOR_VOL, WWA_VOL, EOR_VOL, EWA_VOL, CA_VOL) # add them to the class in the dictionary
     
     # gather the wood_specs
-    spec_grav = ARB_species_attributes.loc[row.FIA_code, 'Specific_gravity']
-    wood_dens = ARB_species_attributes.loc[row.FIA_code, 'Wood_density']
+    spec_grav = ARB_species_attributes.loc[row.FIA_code, 'Specific_gravity'].iloc[0]
+    wood_dens = ARB_species_attributes.loc[row.FIA_code, 'Wood_density'].iloc[0]
     species_classes[row.Your_species_code].add_wood_specs(spec_grav, wood_dens) # add them to the class in the dictionary
     
     # gather the bark equation assignments
-    WOR_BB = ARB_species_attributes.loc[row.FIA_code, 'WOR_BB']
-    WWA_BB = ARB_species_attributes.loc[row.FIA_code, 'WWA_BB']
-    EOR_BB = ARB_species_attributes.loc[row.FIA_code, 'EOR_BB']
-    EWA_BB = ARB_species_attributes.loc[row.FIA_code, 'EWA_BB']
-    CA_BB = ARB_species_attributes.loc[row.FIA_code, 'CA_BB']
+    WOR_BB = ARB_species_attributes.loc[row.FIA_code, 'WOR_BB'].iloc[0]
+    WWA_BB = ARB_species_attributes.loc[row.FIA_code, 'WWA_BB'].iloc[0]
+    EOR_BB = ARB_species_attributes.loc[row.FIA_code, 'EOR_BB'].iloc[0]
+    EWA_BB = ARB_species_attributes.loc[row.FIA_code, 'EWA_BB'].iloc[0]
+    CA_BB = ARB_species_attributes.loc[row.FIA_code, 'CA_BB'].iloc[0]
     species_classes[row.Your_species_code].add_bark(WOR_BB, WWA_BB, EOR_BB, EWA_BB, CA_BB) # add them to the class in the dictionary
     
     # gather the live branch equation assignments
-    WOR_BLB = ARB_species_attributes.loc[row.FIA_code, 'WOR_BLB']
-    WWA_BLB = ARB_species_attributes.loc[row.FIA_code, 'WWA_BLB']
-    EOR_BLB = ARB_species_attributes.loc[row.FIA_code, 'EOR_BLB']
-    EWA_BLB = ARB_species_attributes.loc[row.FIA_code, 'EWA_BLB']
-    CA_BLB = ARB_species_attributes.loc[row.FIA_code, 'CA_BLB']
+    WOR_BLB = ARB_species_attributes.loc[row.FIA_code, 'WOR_BLB'].iloc[0]
+    WWA_BLB = ARB_species_attributes.loc[row.FIA_code, 'WWA_BLB'].iloc[0]
+    EOR_BLB = ARB_species_attributes.loc[row.FIA_code, 'EOR_BLB'].iloc[0]
+    EWA_BLB = ARB_species_attributes.loc[row.FIA_code, 'EWA_BLB'].iloc[0]
+    CA_BLB = ARB_species_attributes.loc[row.FIA_code, 'CA_BLB'].iloc[0]
     species_classes[row.Your_species_code].add_branch(WOR_BLB, WWA_BLB, EOR_BLB, EWA_BLB, CA_BLB) # add them to the class in the dictionary
 
 

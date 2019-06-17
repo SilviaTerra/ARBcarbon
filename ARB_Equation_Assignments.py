@@ -10,7 +10,7 @@ import pandas as pd
 
 # In[2]:
 
-# The volume equations were translated from the PDF availabe on the ARB website: 
+# The volume equations were translated from the PDF availabe on the ARB website:
 # http://www.arb.ca.gov/cc/capandtrade/protocols/usforest/usforestprojects_2015.htm
 # Assignments to individual species were drawn from from this page on May 11, 2016, and downloaded as a PDF
 # http://www.arb.ca.gov/cc/capandtrade/protocols/usforest/2015/volume.equations.ca.or.wa.pdf
@@ -25,7 +25,7 @@ def check_for_None(equation_number):
     elif '.' in eqn:
         return eqn.replace('.','')
     else:
-        return eqn    
+        return eqn
 
 
 # In[4]:
@@ -60,7 +60,7 @@ class Species:
     def add_bark(self, WOR, WWA, EOR, EWA, CA):
         '''
         Adds bark biomass equation assignments for each region to the Species class
-        ''' 
+        '''
         self.WOR_BB = eval("BB_"+str(check_for_None(WOR)))
         self.WWA_BB = eval("BB_"+str(check_for_None(WWA)))
         self.EOR_BB = eval("BB_"+str(check_for_None(EOR)))
@@ -82,16 +82,16 @@ class Species:
 
 # read in the species codes provided by the user
 # includes the user's code, the FIA code, and the common_name
-species_crosswalk = pd.read_excel("/opt/ARBcarbon/Your_species_codes.xlsx", "Crosswalk") 
+species_crosswalk = pd.read_excel("/opt/ARBcarbon/Your_species_codes.xlsx", "Crosswalk")
 species_used = species_crosswalk.dropna() # ignore species the user didn't provide in the crosswalk table
 
 
 # In[6]:
 
 # read in the tables that describe which equations and wood parameters are required by ARB
-with pd.ExcelFile('ARB_Volume_and_Biomass_Tables.xlsx') as xlsx:
+with pd.ExcelFile('/opt/ARB_Volume_and_Biomass_Tables.xlsx') as xlsx:
     SW_VOL = pd.read_excel(xlsx, 'SW_Volume_equations', index_col= 'FIA_code')
-    HW_VOL = pd.read_excel(xlsx, 'HW_Volume_equations', index_col= 'FIA_code')    
+    HW_VOL = pd.read_excel(xlsx, 'HW_Volume_equations', index_col= 'FIA_code')
     VOL = pd.concat([SW_VOL, HW_VOL]) # concatenate all volume equation assignments
     
     SW_Wood = pd.read_excel(xlsx, 'SW_Wood_specs', index_col= 'FIA_code').drop('Common_name', axis=1)
@@ -111,7 +111,7 @@ with pd.ExcelFile('ARB_Volume_and_Biomass_Tables.xlsx') as xlsx:
     BB_BLB = pd.merge(BB, BLB, left_index = True, right_index = True) # merge (outer join) bark and branch equation assignments on FIA_code
     
 # merge all these into a single dataframe
-ARB_species_attributes = pd.merge(VOL_Wood, BB_BLB, left_index = True, right_index = True) 
+ARB_species_attributes = pd.merge(VOL_Wood, BB_BLB, left_index = True, right_index = True)
 
 
 # In[7]:
@@ -187,4 +187,3 @@ def confirm_assignments():
     print confirm_eqs[['code', 'common_name', 'WOR_BB', 'WWA_BB', 'EOR_BB', 'EWA_BB', 'CA_BB']].to_string(index=False) + '\n'
     print "Live Branch Biomass Equations"
     print confirm_eqs[['code', 'common_name', 'WOR_BLB', 'WWA_BLB', 'EOR_BLB', 'EWA_BLB', 'CA_BLB']].to_string(index=False) + '\n'
-

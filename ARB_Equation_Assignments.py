@@ -82,7 +82,7 @@ class Species:
 
 # read in the species codes provided by the user
 # includes the user's code, the FIA code, and the common_name
-species_crosswalk = pd.read_excel("Your_species_codes.xlsx", "Crosswalk") 
+species_crosswalk = pd.read_excel("/opt/ARBcarbon/Your_species_codes.xlsx", "Crosswalk") 
 species_used = species_crosswalk.dropna() # ignore species the user didn't provide in the crosswalk table
 
 

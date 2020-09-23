@@ -3352,6 +3352,6 @@ def test_negatives(equations='all', metrics=['CVTS']):
 
     if len(negatives) > 0:
         print("These equations created negatives.")
-        print negatives
+        print(negatives)
     elif len(negatives) == 0:
-        print "No negatives!"
+        print("No negatives!")
